@@ -310,35 +310,17 @@ export function CandidateList({ initialCandidates }: CandidateListProps) {
                       {/* Contact icons */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3 text-slate-500">
-                          {c.email && (
-                            <Mail size={15} className="hover:text-sky-400" title={c.email} />
-                          )}
-                          {c.phone && (
-                            <Phone size={15} className="hover:text-sky-400" title={c.phone} />
-                          )}
-                          {c.linkedin_url && (
-                            <a
-                              href={c.linkedin_url.startsWith('http') ? c.linkedin_url : `https://${c.linkedin_url}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="hover:text-sky-400"
-                            >
-                              <Linkedin size={15} />
-                            </a>
-                          )}
-                          {c.github_url && (
-                            <a
-                              href={c.github_url.startsWith('http') ? c.github_url : `https://${c.github_url}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="hover:text-sky-400"
-                            >
-                              <Github size={15} />
-                            </a>
-                          )}
-                        </div>
+  {c.email && (
+    <span title={c.email}>
+      <Mail size={15} className="hover:text-sky-400" />
+    </span>
+  )}
+  {c.phone && (
+    <span title={c.phone}>
+      <Phone size={15} className="hover:text-sky-400" />
+    </span>
+  )}
+</div>
                       </td>
 
                       {/* View button */}
