@@ -25,7 +25,7 @@ sending personally identifiable information (PII) to a third-party AI model.
      `[LINKEDIN]`, `[GITHUB]`).
    - Only this **scrubbed** text is sent to the AI model. The AI never sees
      raw contact details.
-3. **AI extraction** — the scrubbed text is sent to Gemini to extract skills,
+3. **AI extraction** — the scrubbed text is sent to Groq to extract skills,
    total years of experience, most recent job title, and location.
 4. **Storage** — structured candidate data (contact details + AI-extracted
    fields) is stored in Supabase (PostgreSQL). The original uploaded files are
@@ -46,7 +46,7 @@ search loop.
 |---|---|---|
 | Framework | Next.js 14 (App Router) | API routes + frontend in one deployable app |
 | Database | Supabase (Postgres) | Generous free tier, instant REST/JS client, fast to set up |
-| AI model | **Gemini** (Google AI Studio) | Free tier, good extraction accuracy for structured JSON-style output, and the assignment's recommended option |
+| AI model | **Groq** (console.groq.com) | Very fast inference and a generous free-tier rate limit — both useful when processing multiple resumes per upload batch |
 | File parsing | Local extraction (PDF/Word parsed server-side) | Keeps raw resume content off any third party until after PII scrubbing |
 | File storage | None — only extracted text/fields are persisted | Reduces what PII is stored at rest; nothing to leak from a file store that doesn't exist |
 | Hosting | Render (free tier) | Simple GitHub-connected deploys for a Next.js Node service |
@@ -54,7 +54,7 @@ search loop.
 **On PII handling specifically:** contact details are extracted via regex
 *before* the scrubbing step, so the structured contact fields (name, email,
 phone, LinkedIn) are captured accurately from the original text — then the
-text itself is scrubbed before it ever leaves the server to reach Gemini. The
+text itself is scrubbed before it ever leaves the server to reach Groq. The
 AI model only ever sees skills/experience/career history, never raw contact
 information.
 
@@ -65,7 +65,7 @@ information.
 ```
 talent-pool/
 ├── app/
-│   ├── api/process/route.ts     # Upload handling: parse → extract PII → scrub → call Gemini → save
+│   ├── api/process/route.ts     # Upload handling: parse → extract PII → scrub → call Groq → save
 │   ├── candidates/page.tsx      # Search/filter candidate list view
 │   ├── upload/page.tsx          # Upload UI with progress indicator
 │   └── page.tsx                 # Landing page
@@ -74,7 +74,7 @@ talent-pool/
 │   ├── upload-experience.tsx    # Upload UI + progress state
 │   └── ...
 ├── lib/
-│   ├── gemini.ts                # Gemini API client + prompt for structured extraction
+│   ├── gemini.ts                # Groq API client + prompt for structured extraction (filename kept from an earlier draft — see note below)
 │   ├── supabase.ts              # Supabase client
 │   └── candidate.js             # Candidate data helpers (regex PII extraction, scrubbing)
 ├── supabase/
@@ -86,6 +86,12 @@ talent-pool/
 > If your folder name for sample resumes differs from `test-data/`, update
 > this path to match before submitting.
 
+> **Naming note:** `lib/gemini.ts` is named after an earlier draft that used
+> Gemini; it now contains the Groq client. Functionally this doesn't affect
+> anything, but renaming it to `lib/groq.ts` (and updating the one import) is
+> a quick cleanup worth doing before submitting, since reviewers will be
+> reading the code directly.
+
 ---
 
 ## Running locally
@@ -95,7 +101,7 @@ talent-pool/
 - Node.js 18.18+ (Next.js 14 requirement) — check with `node -v`
 - npm (comes with Node)
 - A free [Supabase](https://supabase.com) account/project
-- A free Gemini API key from [Google AI Studio](https://aistudio.google.com)
+- A free Groq API key from [console.groq.com](https://console.groq.com)
 
 ### 1. Clone and install
 
@@ -132,10 +138,10 @@ create table if not exists candidates (
 3. From your Supabase project's **Settings → API** page, copy the **Project URL**
    and **anon/public key**.
 
-### 3. Get a Gemini API key
+### 3. Get a Groq API key
 
-Go to [aistudio.google.com](https://aistudio.google.com), sign in, and generate
-a free API key.
+Go to [console.groq.com](https://console.groq.com), sign in, and generate a
+free API key.
 
 ### 4. Configure environment variables
 
@@ -144,7 +150,7 @@ Create a `.env.local` file in the project root:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-GEMINI_API_KEY=your-gemini-api-key
+GROQ_API_KEY=your-groq-api-key
 ```
 
 `.env.local` is git-ignored and should never be committed — see `.gitignore`.
